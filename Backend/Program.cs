@@ -1,3 +1,5 @@
+using Backend.Services.Implementations;
+using Backend.Services.Interfaces;
 using DAL.Implementations;
 using DAL.Interfaces;
 using Entities.Entities;
@@ -16,6 +18,7 @@ builder.Services.AddDbContext<CinemaDataContext>(options =>
 builder.Services.AddScoped<IWorkUnit, WorkUnitImpl>();
 builder.Services.AddScoped<IUserDAL, UserDALImpl>();
 builder.Services.AddScoped<ISessionDAL, SessionDALImpl>();
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddLogging(logging =>
 {
     logging.AddConsole();
