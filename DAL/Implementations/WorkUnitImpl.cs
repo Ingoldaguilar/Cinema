@@ -11,14 +11,20 @@ namespace DAL.Implementations
 {
     public class WorkUnitImpl : IWorkUnit
     {
+        public IUserDAL UserDAL { get; set; }
+
         private readonly CinemaDataContext _context;
         private readonly ILogger<WorkUnitImpl> _logger;
         private bool _disposed = false;
 
-        public WorkUnitImpl(CinemaDataContext context, ILogger<WorkUnitImpl> logger)
+
+        public WorkUnitImpl(CinemaDataContext context,
+                            ILogger<WorkUnitImpl> logger,
+                            IUserDAL userDAL)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            UserDAL = userDAL;
         }
 
         public async Task CompleteAsync()
