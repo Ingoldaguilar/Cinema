@@ -9,6 +9,7 @@ namespace DAL.Interfaces
     public interface IWorkUnit : IDisposable
     {
         IUserDAL UserDAL { get; }
+        ISessionDAL SessionDAL { get; }
         Task CompleteAsync();
     }
 }
