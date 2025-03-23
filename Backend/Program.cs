@@ -19,6 +19,7 @@ builder.Services.AddScoped<IWorkUnit, WorkUnitImpl>();
 builder.Services.AddScoped<IUserDAL, UserDALImpl>();
 builder.Services.AddScoped<ISessionDAL, SessionDALImpl>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ISessionService, SessionService>();
 builder.Services.AddLogging(logging =>
 {
     logging.AddConsole();

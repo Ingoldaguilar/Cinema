@@ -83,7 +83,7 @@ namespace Backend.Controllers
                 return NotFound(ApiResponse<object>.Fail(new() { new ErrorDTO { Message = $"User {id} not found" } }));
             }
             _logger.LogInformation("Deleted user {Id}", id);
-            return Ok(ApiResponse<object>.Ok(null)); // No content, just success
+            return Ok(ApiResponse<object>.Ok(null));
         }
     }
 }
