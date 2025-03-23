@@ -1,7 +1,9 @@
 ﻿using Backend.DTO;
+using Backend.Helpers;
 using Backend.Services.Interfaces;
 using DAL.Interfaces;
 using Entities.Entities;
+using System.Reflection.Metadata.Ecma335;
 
 namespace Backend.Services.Implementations
 {
@@ -16,63 +18,75 @@ namespace Backend.Services.Implementations
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        UserDTO Convertir(User user)
+        private UserResponseDTO? ToResponse(User user) => user == null ? null : new UserResponseDTO
         {
-            return new UserDTO
-            {
-                UserId = user.UserId,
-                Username = user.Username,
-                PasswordHash = user.PasswordHash,
-                Email = user.Email,
-                Role = user.Role,
-                CreatedAt = user.CreatedAt
-            };
-        }
+            UserId = user.UserId,
+            Username = user.Username,
+            PasswordHash = user.PasswordHash,
+            Email = user.Email,
+            Role = user.Role,
+            CreatedAt = user.CreatedAt
+        };
 
-        User Convertir(UserDTO userDTO)
+        private User FromRequest(UserRequestDTO user) => new User
         {
-            return new User
-            {
-                UserId = userDTO.UserId,
-                Username = userDTO.Username,
-                PasswordHash = userDTO.PasswordHash,
-                Email = userDTO.Email,
-                Role = userDTO.Role,
-                CreatedAt = userDTO.CreatedAt
-            };
-        }
+            Username = user.Username,
+            PasswordHash = user.PasswordHash,
+            Email = user.Email,
+            Role = user.Role
+        };
 
-        public async Task<UserDTO> GetUserByIdAsync(int userId)
+        private User FromResponse(UserResponseDTO user) => new User
+        {
+            UserId = user.UserId,
+            Username = user.Username,
+            PasswordHash = user.PasswordHash,
+            Email = user.Email,
+            Role = user.Role,
+            CreatedAt = user.CreatedAt
+        };
+
+        public async Task<UserResponseDTO> GetUserByIdAsync(int userId)
         {
             var user = await _workUnit.UserDAL.GetAsync(userId); 
-            return user == null ? null : Convertir(user);
+            return user == null ? null : ToResponse(user);
         }
 
-        public async Task<List<UserDTO>> GetUsersAsync()
+        public async Task<List<UserResponseDTO>> GetUsersAsync()
         {
             var users = await _workUnit.UserDAL.GetAllAsync();
-            return users.Select(Convertir).ToList();
+            return users.Select(ToResponse).ToList();
         }
 
-        public async Task<UserDTO> AddUserAsync(UserDTO user)
+        public async Task<UserResponseDTO> AddUserAsync(UserRequestDTO user)
         {
-            var userEntity = Convertir(user);
+            var userEntity = FromRequest(user);
+            if (UsersHelper.CheckUsersRole(userEntity.Role))
+            {
+                _logger.LogWarning("Invalid role {Role}", userEntity.Role);
+                return null;
+            }
             await _workUnit.UserDAL.AddAsync(userEntity);
             await _workUnit.CompleteAsync();
             _logger.LogInformation("User {UserId} added", userEntity.UserId);
-            return Convertir(userEntity);
+            return ToResponse(userEntity);
         }
 
-        public async Task<UserDTO> UpdateUserAsync(UserDTO user)
+        public async Task<UserResponseDTO> UpdateUserAsync(UserResponseDTO user)
         {
-            var userEntity = Convertir(user);
+            var userEntity = FromResponse(user);
+            if (UsersHelper.CheckUsersRole(userEntity.Role))
+            {
+                _logger.LogWarning("Invalid role {Role}", userEntity.Role);
+                return null;
+            }
             await _workUnit.UserDAL.UpdateAsync(userEntity);
             await _workUnit.CompleteAsync();
             _logger.LogInformation("User {UserId} updated", userEntity.UserId);
-            return Convertir(userEntity);
+            return ToResponse(userEntity);
         }
 
-        public async Task<UserDTO> DeleteUserAsync(int userId)
+        public async Task<UserResponseDTO> DeleteUserAsync(int userId)
         {
             var user = await _workUnit.UserDAL.GetAsync(userId);
             if (user == null)
@@ -83,7 +97,7 @@ namespace Backend.Services.Implementations
             await _workUnit.UserDAL.DeleteAsync(user);
             await _workUnit.CompleteAsync();
             _logger.LogInformation("User {UserId} deleted", userId);
-            return Convertir(user);
+            return ToResponse(user);
         }
     }
 }
